@@ -29,8 +29,8 @@ function Get-TargetResource
         [System.String]
         $StaticIPAddress,
 
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
+        [Parameter(Mandatory = $false)]
+        [System.String]
         $DomainAdministratorCredential
     )
 
@@ -45,7 +45,10 @@ function Get-TargetResource
 
     try
     {
-        ($oldToken, $context, $newToken) = Set-ImpersonateAs -Credential $DomainAdministratorCredential
+        if ( $PSBoundParameters.Keys -contains "$DomainAdministratorCredential" )
+        {
+            ($oldToken, $context, $newToken) = Set-ImpersonateAs -Credential $DomainAdministratorCredential
+        }
 
         $cluster = Get-Cluster -Name $Name -Domain $computerInformation.Domain
         if ($null -eq $cluster)
@@ -107,8 +110,8 @@ function Set-TargetResource
         [System.String]
         $StaticIPAddress,
 
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
+        [Parameter(Mandatory = $false)]
+        [System.String]
         $DomainAdministratorCredential
     )
 
@@ -125,7 +128,7 @@ function Set-TargetResource
 
     try
     {
-        $cluster = Get-Cluster -Name $Name -Domain $computerInformation.Domain
+        $cluster = Get-Cluster -Name $Name -Domain $computerInformation.Domain -ErrorAction Stop
 
         if ($cluster)
         {
@@ -139,7 +142,10 @@ function Set-TargetResource
 
     try
     {
-        ($oldToken, $context, $newToken) = Set-ImpersonateAs -Credential $DomainAdministratorCredential
+        if ( $PSBoundParameters.Keys -contains "$DomainAdministratorCredential" )
+        {
+            ($oldToken, $context, $newToken) = Set-ImpersonateAs -Credential $DomainAdministratorCredential
+        }
 
         if ($bCreate)
         {
@@ -161,7 +167,7 @@ function Set-TargetResource
 
             Write-Verbose -Message ($script:localizedData.AddNodeToCluster -f $targetNodeName, $Name)
 
-            $list = Get-ClusterNode -Cluster $Name
+            $list = Get-ClusterNode -Cluster $Name -ErrorAction Stop
             foreach ($node in $list)
             {
                 if ($node.Name -eq $targetNodeName)
@@ -230,8 +236,8 @@ function Test-TargetResource
         [System.String]
         $StaticIPAddress,
 
-        [Parameter(Mandatory = $true)]
-        [System.Management.Automation.PSCredential]
+        [Parameter(Mandatory = $false)]
+        [System.String]
         $DomainAdministratorCredential
     )
 
@@ -248,9 +254,12 @@ function Test-TargetResource
 
     try
     {
-        ($oldToken, $context, $newToken) = Set-ImpersonateAs -Credential $DomainAdministratorCredential
+        if ( $PSBoundParameters.Keys -contains "$DomainAdministratorCredential" )
+        {
+            ($oldToken, $context, $newToken) = Set-ImpersonateAs -Credential $DomainAdministratorCredential
+        }
 
-        $cluster = Get-Cluster -Name $Name -Domain $ComputerInfo.Domain
+        $cluster = Get-Cluster -Name $Name -Domain $ComputerInfo.Domain -ErrorAction Stop
 
         Write-Verbose -Message ($script:localizedData.ClusterPresent -f $Name)
 
@@ -260,7 +269,7 @@ function Test-TargetResource
 
             Write-Verbose -Message ($script:localizedData.CheckClusterNodeIsUp -f $targetNodeName, $Name)
 
-            $allNodes = Get-ClusterNode -Cluster $Name
+            $allNodes = Get-ClusterNode -Cluster $Name -ErrorAction Stop
 
             foreach ($node in $allNodes)
             {
